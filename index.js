@@ -20,20 +20,26 @@ puppeteer.launch(puppeteerOptions).then(async browser => {
   page.on("error", err => logError(err));
   page.on("pageerror", err => logError(err));
 
-  // set the content, wait for DOM loaded
-
   try {
     // set auth token
     await Promise.all([
       await page.evaluateOnNewDocument(token => {
         localStorage.clear();
-        localStorage.setItem("token: ", token);
+        localStorage.setItem("token", token);
       }, process.env.TOKEN),
       await page.setExtraHTTPHeaders({ authorization: process.env.TOKEN }),
     ]);
-    await page.goto("http://localhost:3000/map", { waitUntil: "load" });
+    await page.goto(
+      `http://localhost:3000/map?screenshotRiver={"id":"110","center":"[-105.25707723059739,40.417561591450266]"}`,
+      { waitUntil: "networkidle2" }
+    );
 
-    await page.screenshot({ path: "screenshot.png" });
+    await page.waitForSelector("#screenshot-ready");
+
+    // await page.waitForTimeout(30000);
+    await page.screenshot({
+      path: `screenshot-${new Date().toISOString()}.png`,
+    });
     await browser.close();
   } catch (error) {
     console.log("error", error);
