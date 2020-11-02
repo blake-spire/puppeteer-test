@@ -1,7 +1,6 @@
 const puppeteer = require("puppeteer");
 const puppeteerOptions = {
   args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  TZ: "Australia/Melbourne",
 };
 
 puppeteer.launch(puppeteerOptions).then(async browser => {
@@ -9,13 +8,13 @@ puppeteer.launch(puppeteerOptions).then(async browser => {
 
   // setup logging
   function logError(err) {
-    return console.log("\n-------- page error --------\n", err.message);
+    return console.log("Puppeteer error: ", err.message);
   }
 
   page.on("console", async msg => {
     for (let i = 0; i < msg.args().length; i++) {
       const message = await msg.args()[i].jsonValue();
-      console.log(`puppeteer message ${i}: `, message);
+      console.log(`Puppeteer message ${i}: `, message);
     }
   });
   page.on("error", err => logError(err));
@@ -23,7 +22,21 @@ puppeteer.launch(puppeteerOptions).then(async browser => {
 
   // set the content, wait for DOM loaded
 
-  await page.goto("http://localhost:3001");
-  await page.screenshot({ path: "screenshot.png" });
-  await browser.close();
+  try {
+    // set auth token
+    await Promise.all([
+      await page.evaluateOnNewDocument(token => {
+        localStorage.clear();
+        localStorage.setItem("token: ", token);
+      }, process.env.TOKEN),
+      await page.setExtraHTTPHeaders({ authorization: process.env.TOKEN }),
+    ]);
+    await page.goto("http://localhost:3000/map", { waitUntil: "load" });
+
+    await page.screenshot({ path: "screenshot.png" });
+    await browser.close();
+  } catch (error) {
+    console.log("error", error);
+    await browser.close();
+  }
 });

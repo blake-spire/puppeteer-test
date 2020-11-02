@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "screenshot": "node -r dotenv/config index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "puppeteer": "^1.19.0"
+    "dotenv": "^8.2.0",
+    "puppeteer": "^5.4.1"
   }
 }

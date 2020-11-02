@@ -9,5 +9,5 @@ $ yarn start
 run puppeteer script (from project directory):
 
 ```
-$ npm start
+$ yarn run screenshot
 ```
